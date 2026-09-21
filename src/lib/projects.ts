@@ -9,6 +9,7 @@ export type ProjectLinks = {
   demo?: string;
   video?: string;
   store?: string;
+  steam?: string;
 };
 
 export type ProjectMeta = {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { ArrowLeft, ExternalLink, Play, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ExternalLink, Gamepad2, Play, ShoppingBag } from "lucide-react";
 import { GithubIcon } from "@/components/icons";
 import { getAllProjects, getProject, formatDate } from "@/lib/projects";
 import { Container } from "@/components/Container";
@@ -35,6 +35,7 @@ const linkMeta = {
   github: { label: "Source", Icon: GithubIcon },
   video: { label: "Watch video", Icon: Play },
   store: { label: "Store page", Icon: ShoppingBag },
+  steam: { label: "Steam", Icon: Gamepad2 },
 } as const;
 
 export default async function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
