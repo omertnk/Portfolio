@@ -1,11 +1,11 @@
 ---
-title: "Rose"
-summary: "A story-driven 2.5D side-scroller game developed using Unreal Engine 5. We received an investment of $50,000 from the Informatics Valley for this project."
-date: 2023-05-01
+title: "ROSE"
+summary: "Story-driven 2.5D side-scroller released on Steam. Built in Unreal Engine 5 by a 9-person team, backed by a $50,000 investment from Digiage."
+date: 2025-08-03
 tags: ["Unreal Engine 5", "C++", "Blueprints", "Gameplay", "AI", "Animation"]
-role: "Programmer"
+role: "Gameplay Programmer"
 duration: "2 years"
-team: "9 person"
+team: "9 people"
 featured: true
 links:
   steam: "https://store.steampowered.com/app/2657160/ROSE/"
@@ -13,23 +13,51 @@ links:
 
 ## Overview
 
-An Ability System was used for the core gameplay, designed in a modular fashion. On the animation side, 
-an animation layer system was implemented; this allows for easy adjustments—such as modifying only the cycle animations if the character sustains a leg injury—without the need to rebuild the entire state machine.
+ROSE is a story-driven 2.5D side-scroller set in a war-torn wasteland. You play a journalist searching for the truth behind his daughter's death, moving through exploration, puzzle-platforming and stealth-driven encounters in a dark, cinematic narrative about the cost of war.
 
+The game was developed over two years by Rise Studio, a 9-person team, and released on Steam in Early Access in August 2025 with localization in six languages. The project received a $50,000 investment from Digiage during development.
+
+I worked as a gameplay programmer, owning the core gameplay framework, enemy AI and the animation architecture.
+
+<Gallery items={[
+  { src: "/projects/rose/screenshot-1.jpg", caption: "Exploring the wasteland" },
+  { src: "/projects/rose/screenshot-2.jpg", caption: "Stealth encounter with enemy soldiers" },
+]} />
 
 ## What I built
 
-- Flash-bang mechanic built on the Ability System (allows us to briefly blind enemy soldiers and escape)
-- Enemy AI – Chase, investigate, and capture systems based on behavior trees
-- Animation Layer – Enemy and character animation systems were coded once, turning the process into a purely asset-based task
-- Push/Pull objects – The character can push boxes to reach specific locations or solve puzzles
-- Various puzzle mechanics – The character must solve puzzles within the level to exit certain areas
+- **Modular Ability System** — core gameplay actions (flash-bang, push/pull, interactions) built as self-contained abilities that designers could combine without touching code
+- **Flash-bang mechanic** — briefly blinds enemy soldiers so the player can slip past or escape; built on top of the Ability System
+- **Enemy AI** — Behavior Tree–driven chase, investigate and capture states; enemies react to noise and lost line of sight
+- **Animation Layer system** — enemy and player animation logic written once, so adding a new state (e.g. a leg-injury walk cycle) became a pure asset task instead of rebuilding the state machine
+- **Push/Pull objects** — physics-aware box pushing used for traversal and puzzles
+- **Puzzle mechanics** — level-specific puzzles the player must solve to progress
+
+## Systems
+
+### Ability System
+
+Every player action is an ability with its own activation rules, cooldown and cancel conditions. This kept the character class small and let us prototype new mechanics in a day rather than a week.
+
+<Figure src="/projects/rose/ability-system.png" caption="Ability activation flow — input → can-activate check → execute → cleanup." />
+
+### Enemy AI
+
+Soldiers patrol, investigate disturbances and chase on sight. The capture state ends the run, which made AI readability critical: the player must always understand why they were spotted.
+
+<Figure src="/projects/rose/enemy-ai.gif" caption="Investigate → chase → capture loop driven by a Behavior Tree." />
+
+### Animation Layers
+
+Instead of one large state machine per character, locomotion, upper-body and injury states live in separate linked layers. Swapping a layer changes only that part of the animation, so a character with a wounded leg reuses everything except the cycle animations.
+
+<Figure src="/projects/rose/animation-layers.png" caption="Layered animation graph — only the highlighted layer changes for the injured state." />
 
 ## Challenges & learnings
 
-This was my first project, and through it, I was introduced to the Unreal Engine architecture. It taught me how not to write good code and what happens when you fail to prioritize optimization—even for a simple game.
+This was my first shipped project and my introduction to Unreal Engine's architecture. The biggest lesson was optimization: we treated performance as something to fix at the end, and even a linear 2.5D game punished that. Late in development we had to go back and profile, move per-frame logic out of Tick, and clean up asset references that were loading far more than needed.
 
-<Gallery images={["/projects/Rose/cover.png", "/projects/Rose/cover.png"]} />
+What I'd do differently today: profile from the first playable build, set a frame budget early, and design systems around data (abilities, animation layers) from day one rather than refactoring toward it midway.
 
 ## Tech stack
 
@@ -38,4 +66,5 @@ This was my first project, and through it, I was introduced to the Unreal Engine
 | Engine | Unreal Engine 5.4 |
 | Language | C++, Blueprints |
 | Version control | Plastic SCM |
-| Task Management | Jira |
+| Task management | Jira |
+| Platform | Windows (Steam) |
