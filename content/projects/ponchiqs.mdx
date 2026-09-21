@@ -1,6 +1,6 @@
 ---
 title: "Ponchiqs"
-summary: "Free-to-play multiplayer arena shooter released on the Epic Games Store. I built the movement and traversal abilities — hook, glider, skates, super jump — and the shrinking-zone system, all replicated over the network."
+summary: "Free-to-play multiplayer first-person shooter on the Epic Games Store. I built the movement and traversal abilities — hook, umbrella glide, skates, super jump — and the shrinking-zone system, all replicated over the network."
 date: 2025-04-01
 tags: ["Unreal Engine 5", "C++", "Multiplayer", "Replication", "Gameplay Ability System", "Gameplay"]
 role: "Gameplay Programmer"
@@ -13,9 +13,9 @@ links:
 
 ## Overview
 
-Ponchiqs is a free-to-play multiplayer arena shooter built in Unreal Engine 5 and released on the Epic Games Store by Ponchiqs Studio. Matches are fast and vertical: players hook onto terrain, glide with umbrellas, skate across the map and fight inside a shrinking zone.
+Ponchiqs is a free-to-play multiplayer first-person shooter built in Unreal Engine 5 and released in Early Access on the Epic Games Store by Ponchiqs Studio. It mixes a party-style shooter with customizable "psycho powers": matches are fast and vertical, with players hooking onto terrain, gliding with umbrellas, skating across the map and fighting inside a shrinking zone.
 
-I joined the studio as a Gameplay Programmer and owned most of the movement and traversal layer. Every mechanic below is an ability in the Gameplay Ability System and works in multiplayer — server-authoritative, with client prediction where the feel demanded it.
+I joined the studio as a Gameplay Programmer and owned most of the movement and traversal layer. Every mechanic below is an ability in the Gameplay Ability System and works in multiplayer. Movement-critical abilities such as the hook and jumps are client-predicted so they respond on the same frame; systems like the zone and level volumes stay purely server-authoritative.
 
 <Gallery items={[
   { src: "/projects/ponchiqs/screenshot-1.jpg", caption: "Hook traversal mid-match" },
@@ -36,7 +36,9 @@ I joined the studio as a Gameplay Programmer and owned most of the movement and 
 
 ### Multiplayer movement on the Ability System
 
-Every traversal mechanic is a `GameplayAbility` that drives the character's movement component. The server owns the truth; the local client predicts activation and movement so a hook or jump reacts on the same frame the key is pressed. Ability state (active hook target, glide, skate mode) replicates through Gameplay Tags, which also gate what can interrupt what — you cannot deploy the umbrella while hooked, but you can cancel the hook into a glide.
+Every traversal mechanic is a `GameplayAbility` that drives the character's movement component. The server owns the truth. For abilities where input latency would be felt — hook, super jump, trampoline — the local client predicts activation and movement, and the server validates and corrects if needed. Abilities where a few milliseconds do not matter run server-authoritative only, which keeps them simpler and cheaper.
+
+Ability state (active hook, gliding, skate mode) replicates through Gameplay Tags, which also define what can combine with what. Gliding with the umbrella does not block the hook: the player can fire the hook mid-glide, and the hook takes over movement when it attaches.
 
 <Figure src="/projects/ponchiqs/ability-graph.png" caption="Ability activation and replication flow — client predicts, server validates, tags gate transitions." />
 
