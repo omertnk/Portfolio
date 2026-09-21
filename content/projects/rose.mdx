@@ -39,19 +39,15 @@ I worked as a gameplay programmer, owning the core gameplay framework, enemy AI 
 
 Every player action is an ability with its own activation rules, cooldown and cancel conditions. This kept the character class small and let us prototype new mechanics in a day rather than a week.
 
-<Figure src="/projects/rose/ability-system.png" caption="Ability activation flow — input → can-activate check → execute → cleanup." />
 
 ### Enemy AI
 
 Soldiers patrol, investigate disturbances and chase on sight. The capture state ends the run, which made AI readability critical: the player must always understand why they were spotted.
 
-<Figure src="/projects/rose/enemy-ai.gif" caption="Investigate → chase → capture loop driven by a Behavior Tree." />
 
 ### Animation Layers
 
 Instead of one large state machine per character, locomotion, upper-body and injury states live in separate linked layers. Swapping a layer changes only that part of the animation, so a character with a wounded leg reuses everything except the cycle animations.
-
-<Figure src="/projects/rose/animation-layers.png" caption="Layered animation graph — only the highlighted layer changes for the injured state." />
 
 ## Challenges & learnings
 
