@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio
 
-## Getting Started
+Next.js 16 + Tailwind + MDX ile kişisel portfolio sitesi. Vercel'e deploy edilmek üzere hazırlanmıştır.
 
-First, run the development server:
+## Geliştirme
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build (deploy öncesi kontrol)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Yeni proje eklemek
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. `content/_TEMPLATE.mdx` dosyasını `content/projects/<slug>.mdx` olarak kopyala.
+   `<slug>` URL'de görünür (`/projects/<slug>`): küçük harf, boşluk yerine tire.
+2. Kapak görselini `public/projects/<slug>/cover.png` olarak koy (16:9, ~1600×900).
+   Ek görseller de aynı klasöre.
+3. Frontmatter'ı doldur, altına Markdown ile anlat. Bitti — sayfa otomatik oluşur.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Frontmatter alanları:
 
-## Learn More
+| Alan       | Zorunlu | Açıklama                                          |
+| ---------- | ------- | ------------------------------------------------- |
+| `title`    | ✓       | Proje adı                                         |
+| `summary`  | ✓       | Tek cümle; kartlarda ve meta açıklamada kullanılır |
+| `date`     | ✓       | `YYYY-MM-DD`; sıralama buna göre                  |
+| `tags`     | ✓       | Teknoloji etiketleri                              |
+| `role`     |         | Rolün                                             |
+| `duration` |         | Süre                                              |
+| `team`     |         | Ekip büyüklüğü                                    |
+| `featured` |         | `true` → ana sayfada (ilk 3)                      |
+| `draft`    |         | `true` → sadece dev'de görünür                    |
+| `cover`    |         | Varsayılan: `/projects/<slug>/cover.png`          |
+| `links`    |         | `github`, `demo`, `video`, `store` — boşlar gizli |
 
-To learn more about Next.js, take a look at the following resources:
+MDX içinde kullanılabilen bileşenler:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```mdx
+<Video src="https://www.youtube.com/watch?v=XXXX" />   // YouTube
+<Video src="/projects/slug/demo.mp4" />                 // yerel video
+<Gallery images={["/projects/slug/1.jpg", "/projects/slug/2.jpg"]} />
+<Gallery cols={3} images={[...]} />
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Geçici kapak görseli üretmek için: `node scripts/placeholder.mjs <slug> [hex-renk]`
 
-## Deploy on Vercel
+## Kişisel bilgileri düzenlemek
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/config/site.ts` — isim, unvan, açıklama, e-posta, sosyal linkler, menü
+- `src/app/about/page.tsx` — Hakkımda metni
+- `src/app/globals.css` — renk paleti (`:root` değişkenleri)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Vercel'e deploy
+
+1. Repo'yu GitHub'a push et.
+2. [vercel.com](https://vercel.com) → **Add New Project** → repo'yu seç → **Deploy**. Ayar gerekmez.
+3. Verilen adresi `src/config/site.ts` içindeki `url` alanına yaz (sitemap ve OG için).
+
+Her `git push` sonrası Vercel otomatik yeniden deploy eder.
+
+## Yapı
+
+```
+content/projects/*.mdx      proje içerikleri
+public/projects/<slug>/     proje görselleri
+src/config/site.ts          site ayarları
+src/lib/projects.ts         MDX okuma / listeleme
+src/components/             UI bileşenleri (mdx/ altında MDX bileşenleri)
+src/app/                    sayfalar (App Router)
+```
