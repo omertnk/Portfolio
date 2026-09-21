@@ -14,7 +14,7 @@ npm run build    # production build (deploy öncesi kontrol)
 
 1. `content/_TEMPLATE.mdx` dosyasını `content/projects/<slug>.mdx` olarak kopyala.
    `<slug>` URL'de görünür (`/projects/<slug>`): küçük harf, boşluk yerine tire.
-2. Kapak görselini `public/projects/<slug>/cover.png` olarak koy (16:9, ~1600×900).
+2. Kapak görselini `public/projects/<slug>/cover.png` (veya `.jpg` / `.webp`) olarak koy (16:9, ~1600×900).
    Ek görseller de aynı klasöre.
 3. Frontmatter'ı doldur, altına Markdown ile anlat. Bitti — sayfa otomatik oluşur.
 
@@ -31,7 +31,7 @@ Frontmatter alanları:
 | `team`     |         | Ekip büyüklüğü                                    |
 | `featured` |         | `true` → ana sayfada (ilk 3)                      |
 | `draft`    |         | `true` → sadece dev'de görünür                    |
-| `cover`    |         | Varsayılan: `/projects/<slug>/cover.png`          |
+| `cover`    |         | Varsayılan: klasördeki `cover.png/jpg/jpeg/webp`  |
 | `links`    |         | `github`, `demo`, `video`, `store` — boşlar gizli |
 
 MDX içinde kullanılabilen bileşenler:

@@ -3,6 +3,17 @@ import path from "node:path";
 import matter from "gray-matter";
 
 const PROJECTS_DIR = path.join(process.cwd(), "content", "projects");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+const COVER_EXTENSIONS = ["png", "jpg", "jpeg", "webp"];
+
+/** public/projects/<slug>/cover.{png,jpg,jpeg,webp} — hangisi varsa onu döndürür. */
+function findCover(slug: string): string {
+  for (const ext of COVER_EXTENSIONS) {
+    const rel = `/projects/${slug}/cover.${ext}`;
+    if (fs.existsSync(path.join(PUBLIC_DIR, rel))) return rel;
+  }
+  return `/projects/${slug}/cover.png`; // bulunamazsa: kırık görsel yerine belirgin bir yol
+}
 
 export type ProjectLinks = {
   github?: string;
@@ -17,7 +28,7 @@ export type ProjectMeta = {
   title: string;
   summary: string;
   date: string; // YYYY-MM-DD
-  cover: string; // /projects/<slug>/cover.png
+  cover: string; // /projects/<slug>/cover.{png,jpg,jpeg,webp}
   tags: string[];
   role?: string;
   duration?: string;
@@ -46,7 +57,7 @@ function readProject(file: string): Project {
     title: data.title ?? slug,
     summary: data.summary ?? "",
     date: toISODate(data.date),
-    cover: data.cover ?? `/projects/${slug}/cover.png`,
+    cover: data.cover ?? findCover(slug),
     tags: data.tags ?? [],
     role: data.role,
     duration: data.duration,
