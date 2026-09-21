@@ -2,10 +2,10 @@
 // Burayı değiştir, tüm site güncellenir.
 
 export const site = {
-  name: "Ömer Tank",
+  name: "Ömer Faruk Tanık",
   title: "Game & Software Developer",
   description:
-    "Unreal Engine ile oyunlar, web ile ürünler geliştiriyorum. Projelerim ve yaptıklarım burada.",
+    "I develop multiplayer games using Unreal Engine. I am actively working on a zombie survival game.",
   url: "https://omertnk.vercel.app",
   email: "omertank38@gmail.com",
   location: "Türkiye",
