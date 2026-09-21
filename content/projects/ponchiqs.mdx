@@ -27,6 +27,7 @@ I joined the studio as a Gameplay Programmer and owned most of the movement and 
 - **Zone system** — Fortnite/PUBG-style shrinking play area with phase timers, damage outside the circle and server-driven center selection
 - **Trampoline & super jump** — level-placed launch pads and an ability-driven high jump for vertical movement
 - **Speed boost & mud areas** — level volumes that apply movement modifiers to any player inside; boost accelerates, mud slows
+- **Portals** — enter a portal and exit from another one on the map, either a fixed destination or a random one; teleport is server-authoritative so every client agrees on where the player appeared
 - **Ability framework** — all of the above built on the Gameplay Ability System so designers could tune cooldowns, costs and effects without code changes
 
 ## Systems
@@ -58,6 +59,10 @@ Skating is a separate movement mode rather than a speed multiplier: acceleration
 ### Zone
 
 The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
+
+### Portals
+
+Portals link to either a fixed partner or a random portal on the map. Teleporting is server-authoritative: the server picks the destination and moves the character, then clients receive the new position. This avoids the mismatch a predicted teleport would cause when two players use the same portal at once.
 
 ### Level volumes
 
