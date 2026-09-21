@@ -6,7 +6,7 @@ export const site = {
   title: "Game & Software Developer",
   description:
     "Unreal Engine ile oyunlar, web ile ürünler geliştiriyorum. Projelerim ve yaptıklarım burada.",
-  url: "https://portfolio.vercel.app", // Vercel'e deploy edince buraya gerçek adresi yaz
+  url: "https://portfolio-mu-nine-bzj83mc7hg.vercel.app",
   email: "omertank38@gmail.com",
   location: "Türkiye",
 
