@@ -9,6 +9,7 @@ import { GithubIcon } from "@/components/icons";
 import { getAllProjects, getProject, formatDate } from "@/lib/projects";
 import { Container } from "@/components/Container";
 import { Tag } from "@/components/Tag";
+import { StatusBadge } from "@/components/StatusBadge";
 import { mdxComponents } from "@/components/mdx";
 
 export async function generateStaticParams() {
@@ -63,6 +64,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
         </Link>
 
         <header className="mt-6">
+          <StatusBadge status={project.status} className="mb-3" />
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h1>
           <p className="mt-3 max-w-2xl text-lg text-muted">{project.summary}</p>
           <div className="mt-4 flex flex-wrap gap-1.5">

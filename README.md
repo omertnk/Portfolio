@@ -29,6 +29,7 @@ Frontmatter alanları:
 | `role`     |         | Rolün                                             |
 | `duration` |         | Süre                                              |
 | `team`     |         | Ekip büyüklüğü                                    |
+| `status`   |         | `released` / `active` / `shelved` / `prototype` → kartta rozet |
 | `featured` |         | `true` → ana sayfada (ilk 3)                      |
 | `draft`    |         | `true` → sadece dev'de görünür                    |
 | `cover`    |         | Varsayılan: klasördeki `cover.png/jpg/jpeg/webp`  |
@@ -43,7 +44,7 @@ MDX içinde kullanılabilen bileşenler:
 <Gallery cols={3} images={[...]} />
 ```
 
-`<Figure>` yerel `.mp4` / `.webm` dosyasını GIF gibi oynatır (sessiz, döngülü, otomatik); ses ve kontroller için `controls` ekle.
+`<Figure>` yerel `.mp4` / `.webm` dosyasını GIF gibi oynatır (sessiz, döngülü, otomatik; tıklayınca durur/devam eder); ses ve kontroller için `controls` ekle.
 
 Yardımcı scriptler:
 

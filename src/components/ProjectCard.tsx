@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ProjectMeta } from "@/lib/projects";
 import { formatDate } from "@/lib/projects";
 import { Tag } from "./Tag";
+import { StatusBadge } from "./StatusBadge";
 
 export function ProjectCard({ project }: { project: ProjectMeta }) {
   return (
@@ -19,6 +20,7 @@ export function ProjectCard({ project }: { project: ProjectMeta }) {
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
+        <StatusBadge status={project.status} className="absolute left-3 top-3 bg-background/70" />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">

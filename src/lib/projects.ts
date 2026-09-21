@@ -23,6 +23,16 @@ export type ProjectLinks = {
   steam?: string;
 };
 
+/** Kartta ve detay sayfasında rozet olarak görünür. */
+export const PROJECT_STATUSES = {
+  released: { label: "Released", tone: "green" },
+  active: { label: "In development", tone: "blue" },
+  shelved: { label: "Shelved", tone: "gray" },
+  prototype: { label: "Prototype", tone: "amber" },
+} as const;
+
+export type ProjectStatus = keyof typeof PROJECT_STATUSES;
+
 export type ProjectMeta = {
   slug: string;
   title: string;
@@ -33,6 +43,7 @@ export type ProjectMeta = {
   role?: string;
   duration?: string;
   team?: string;
+  status?: ProjectStatus;
   featured?: boolean;
   draft?: boolean;
   links?: ProjectLinks;
@@ -62,6 +73,7 @@ function readProject(file: string): Project {
     role: data.role,
     duration: data.duration,
     team: data.team,
+    status: data.status && data.status in PROJECT_STATUSES ? data.status : undefined,
     featured: data.featured ?? false,
     draft: data.draft ?? false,
     links: data.links ?? {},
