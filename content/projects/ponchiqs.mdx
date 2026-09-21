@@ -55,12 +55,6 @@ Deploying the umbrella switches the character into a custom falling mode with re
 
 Skating is a separate movement mode rather than a speed multiplier: acceleration, friction and turn radius are tuned independently so crossing the map feels fast without breaking aiming.
 
-### Super jump & trampolines
-
-<Figure src="/projects/ponchiqs/superjump.mp4" caption="Ramp launch — level-placed launch pads and the super jump ability share the same launch logic." />
-
-Both use one launch ability with different parameters: the super jump is triggered by the player, trampolines by overlap. Predicting the launch on the client keeps the take-off instant even under latency.
-
 ### Zone
 
 The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
