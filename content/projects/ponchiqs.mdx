@@ -1,0 +1,74 @@
+---
+title: "Ponchiqs"
+summary: "Free-to-play multiplayer arena shooter released on the Epic Games Store. I built the movement and traversal abilities — hook, glider, skates, super jump — and the shrinking-zone system, all replicated over the network."
+date: 2025-04-01
+tags: ["Unreal Engine 5", "C++", "Multiplayer", "Replication", "Gameplay Ability System", "Gameplay"]
+role: "Gameplay Programmer"
+duration: "TODO"
+team: "TODO"
+featured: true
+links:
+  store: "https://store.epicgames.com/en-US/p/ponchiqs-e93244"
+---
+
+## Overview
+
+Ponchiqs is a free-to-play multiplayer arena shooter built in Unreal Engine 5 and released on the Epic Games Store by Ponchiqs Studio. Matches are fast and vertical: players hook onto terrain, glide with umbrellas, skate across the map and fight inside a shrinking zone.
+
+I joined the studio as a Gameplay Programmer and owned most of the movement and traversal layer. Every mechanic below is an ability in the Gameplay Ability System and works in multiplayer — server-authoritative, with client prediction where the feel demanded it.
+
+<Gallery items={[
+  { src: "/projects/ponchiqs/screenshot-1.jpg", caption: "Hook traversal mid-match" },
+  { src: "/projects/ponchiqs/screenshot-2.jpg", caption: "Zone closing in" },
+]} />
+
+## What I built
+
+- **Hook** — grapple onto surfaces and pull the character through the air; replicated rope state and predicted movement so it feels instant on the client
+- **Umbrella glide** — deploy an umbrella mid-air to slow the fall and steer; used both for traversal and for escaping fights
+- **Skates** — ground traversal mode with its own acceleration and turning model for crossing the map quickly
+- **Zone system** — Fortnite/PUBG-style shrinking play area with phase timers, damage outside the circle and server-driven center selection
+- **Trampoline & super jump** — level-placed launch pads and an ability-driven high jump for vertical movement
+- **Speed boost & mud areas** — level volumes that apply movement modifiers to any player inside; boost accelerates, mud slows
+- **Ability framework** — all of the above built on the Gameplay Ability System so designers could tune cooldowns, costs and effects without code changes
+
+## Systems
+
+### Multiplayer movement on the Ability System
+
+Every traversal mechanic is a `GameplayAbility` that drives the character's movement component. The server owns the truth; the local client predicts activation and movement so a hook or jump reacts on the same frame the key is pressed. Ability state (active hook target, glide, skate mode) replicates through Gameplay Tags, which also gate what can interrupt what — you cannot deploy the umbrella while hooked, but you can cancel the hook into a glide.
+
+<Figure src="/projects/ponchiqs/ability-graph.png" caption="Ability activation and replication flow — client predicts, server validates, tags gate transitions." />
+
+### Hook
+
+The hook is the most complex ability: a replicated projectile, an attach phase, and a pull phase that overrides the movement mode. The main challenge was keeping the rope visually stable for other clients while the local player's prediction ran ahead of the server.
+
+<Figure src="/projects/ponchiqs/hook.gif" caption="Hook: fire → attach → pull, with the rope synced for spectators." />
+
+### Zone
+
+The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
+
+<Figure src="/projects/ponchiqs/zone.png" caption="Zone phases — shrink timing and damage per phase are data-driven." />
+
+### Level volumes
+
+Speed boost and mud areas are placed by level designers as volumes. On overlap the volume applies a Gameplay Effect with a movement-speed modifier; on exit it removes it. Because the effect is data, designers could add new area types (e.g. a jump-boost pad) without touching code.
+
+<Figure src="/projects/ponchiqs/volumes.png" caption="Boost and mud volumes as Gameplay Effect appliers." />
+
+## Challenges & learnings
+
+This project was where I learned multiplayer for real. Getting a mechanic to work locally is a fraction of the job; making it feel identical for the owning client, other clients and the server is the rest. The biggest lessons were around prediction — which abilities to predict, how to reconcile when the server disagrees, and how to keep cosmetic state (rope, umbrella, skate effects) in sync without spending bandwidth on it.
+
+Building everything on the Ability System paid off: once the framework was in place, a new mechanic was mostly configuration, and designers could balance it themselves.
+
+## Tech stack
+
+| Area | Tools |
+| --- | --- |
+| Engine | Unreal Engine 5 |
+| Language | C++, Blueprints |
+| Networking | UE replication, Gameplay Ability System with prediction |
+| Platform | Windows (Epic Games Store) |
