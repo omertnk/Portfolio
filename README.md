@@ -43,7 +43,12 @@ MDX içinde kullanılabilen bileşenler:
 <Gallery cols={3} images={[...]} />
 ```
 
-Geçici kapak görseli üretmek için: `node scripts/placeholder.mjs <slug> [hex-renk]`
+`<Figure>` yerel `.mp4` / `.webm` dosyasını GIF gibi oynatır (sessiz, döngülü, otomatik); ses ve kontroller için `controls` ekle.
+
+Yardımcı scriptler:
+
+- Geçici kapak: `node scripts/placeholder.mjs <slug> [hex-renk]`
+- Videodan kısa klip (ffmpeg gerekir): `node scripts/clip.mjs <video> <slug>/<ad> <mm:ss> <saniye>`
 
 ## Kişisel bilgileri düzenlemek
 
