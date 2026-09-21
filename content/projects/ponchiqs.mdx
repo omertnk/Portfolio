@@ -39,13 +39,13 @@ Ability state (active hook, gliding, skate mode) replicates through Gameplay Tag
 
 ### Hook
 
-<Figure src="/projects/ponchiqs/hook.mp4" caption="Hook: fire, attach, pull — predicted on the owning client, rope state replicated to everyone else." />
+<Figure src="/projects/ponchiqs/hook.mp4" caption="Trampoline bounce into a hook pull — both are abilities, predicted on the owning client." />
 
 The hook is the most complex ability: a replicated projectile, an attach phase, and a pull phase that overrides the movement mode. The main challenge was keeping the rope visually stable for other clients while the local player's prediction ran ahead of the server.
 
 ### Umbrella glide
 
-<Figure src="/projects/ponchiqs/umbrella.mp4" caption="Umbrella glide — slows the fall and lets the player steer; the hook can still be fired mid-air." />
+<Figure src="/projects/ponchiqs/umbrella.mp4" caption="Super jump into an umbrella glide — the umbrella deploys mid-air and slows the fall." />
 
 Deploying the umbrella switches the character into a custom falling mode with reduced gravity and air control. It doubles as an escape tool in fights, so it had to be cancelable into other abilities without a visible hitch.
 
@@ -57,13 +57,11 @@ Skating is a separate movement mode rather than a speed multiplier: acceleration
 
 ### Super jump & trampolines
 
-<Figure src="/projects/ponchiqs/superjump.mp4" caption="Trampoline launch — level-placed pads and the super jump ability share the same launch logic." />
+<Figure src="/projects/ponchiqs/superjump.mp4" caption="Ramp launch — level-placed launch pads and the super jump ability share the same launch logic." />
 
 Both use one launch ability with different parameters: the super jump is triggered by the player, trampolines by overlap. Predicting the launch on the client keeps the take-off instant even under latency.
 
 ### Zone
-
-<Figure src="/projects/ponchiqs/zone.mp4" caption="Zone — the play area shrinks in phases; staying outside applies damage over time." />
 
 The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
 
