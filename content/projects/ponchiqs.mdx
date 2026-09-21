@@ -19,11 +19,6 @@ Ponchiqs is a free-to-play multiplayer third-person shooter built in Unreal Engi
 
 I joined the studio as a Gameplay Programmer and owned most of the movement and traversal layer. Every mechanic below is an ability in the Gameplay Ability System and works in multiplayer. Movement-critical abilities such as the hook and jumps are client-predicted so they respond on the same frame; systems like the zone and level volumes stay purely server-authoritative.
 
-<Gallery items={[
-  { src: "/projects/ponchiqs/screenshot-1.jpg", caption: "Hook traversal mid-match" },
-  { src: "/projects/ponchiqs/screenshot-2.jpg", caption: "Zone closing in" },
-]} />
-
 ## What I built
 
 - **Hook** — grapple onto surfaces and pull the character through the air; replicated rope state and predicted movement so it feels instant on the client
@@ -42,25 +37,39 @@ Every traversal mechanic is a `GameplayAbility` that drives the character's move
 
 Ability state (active hook, gliding, skate mode) replicates through Gameplay Tags, which also define what can combine with what. Gliding with the umbrella does not block the hook: the player can fire the hook mid-glide, and the hook takes over movement when it attaches.
 
-<Figure src="/projects/ponchiqs/ability-graph.png" caption="Ability activation and replication flow — client predicts, server validates, tags gate transitions." />
-
 ### Hook
+
+<Figure src="/projects/ponchiqs/hook.mp4" caption="Hook: fire, attach, pull — predicted on the owning client, rope state replicated to everyone else." />
 
 The hook is the most complex ability: a replicated projectile, an attach phase, and a pull phase that overrides the movement mode. The main challenge was keeping the rope visually stable for other clients while the local player's prediction ran ahead of the server.
 
-<Figure src="/projects/ponchiqs/hook.gif" caption="Hook: fire → attach → pull, with the rope synced for spectators." />
+### Umbrella glide
+
+<Figure src="/projects/ponchiqs/umbrella.mp4" caption="Umbrella glide — slows the fall and lets the player steer; the hook can still be fired mid-air." />
+
+Deploying the umbrella switches the character into a custom falling mode with reduced gravity and air control. It doubles as an escape tool in fights, so it had to be cancelable into other abilities without a visible hitch.
+
+### Skates
+
+<Figure src="/projects/ponchiqs/skates.mp4" caption="Skates — a ground traversal mode with its own acceleration and turning model." />
+
+Skating is a separate movement mode rather than a speed multiplier: acceleration, friction and turn radius are tuned independently so crossing the map feels fast without breaking aiming.
+
+### Super jump & trampolines
+
+<Figure src="/projects/ponchiqs/superjump.mp4" caption="Trampoline launch — level-placed pads and the super jump ability share the same launch logic." />
+
+Both use one launch ability with different parameters: the super jump is triggered by the player, trampolines by overlap. Predicting the launch on the client keeps the take-off instant even under latency.
 
 ### Zone
 
-The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
+<Figure src="/projects/ponchiqs/zone.mp4" caption="Zone — the play area shrinks in phases; staying outside applies damage over time." />
 
-<Figure src="/projects/ponchiqs/zone.png" caption="Zone phases — shrink timing and damage per phase are data-driven." />
+The zone is a server-only system: it picks the next circle, broadcasts phase timers to clients, and applies a damage Gameplay Effect to anyone outside. Clients only render the circle and the countdown, so the system stays cheap over the network.
 
 ### Level volumes
 
-Speed boost and mud areas are placed by level designers as volumes. On overlap the volume applies a Gameplay Effect with a movement-speed modifier; on exit it removes it. Because the effect is data, designers could add new area types (e.g. a jump-boost pad) without touching code.
-
-<Figure src="/projects/ponchiqs/volumes.png" caption="Boost and mud volumes as Gameplay Effect appliers." />
+Speed boost and mud areas are placed by level designers as volumes. On overlap the volume applies a Gameplay Effect with a movement-speed modifier; on exit it removes it. Because the effect is data, designers could add new area types without touching code.
 
 ## Challenges & learnings
 
