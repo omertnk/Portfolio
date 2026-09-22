@@ -57,7 +57,7 @@ Zombies run in three tiers. **Active** agents simulate fully. **Simple** agents 
 
 The third tier, **Virtual**, has no actor at all. The agent becomes a record holding its position, its goal and an opaque payload with whatever it must not forget. The director never learns what a zombie is — it moves positions around and hands the payload back when a body is needed again.
 
-Behaviour itself runs on State Tree, and every task and condition is written in C++ — the tree asset holds only the wiring. That split is deliberate: a State Tree is a binary asset and a text search cannot see inside it. Keeping the vocabulary in code means "what can a zombie do" stays greppable even though "when does it do it" does not.
+Behaviour itself runs on State Tree. Every task and condition is written in C++ and the tree asset holds only the wiring, so what a zombie is capable of lives in code while when it does each thing stays editable as data.
 
 ### Drawing a crowd that does not exist
 
@@ -81,7 +81,7 @@ Needs drain through periodic effects whose magnitude is computed per tick rather
 ### Character animation
 
 {/* GÖRSEL: <Figure src="/projects/endoflife/animation.mp4" caption="Turn-in-place and per-weapon layers." /> */}
-The character's animation state is computed in C++ and the animation blueprint only consumes it. Velocity, acceleration, lean, turn state, whether a firearm is in hand, whether the body is squared up for combat — all of it is sampled once per update and exposed as thread-safe values the graph can branch on from a worker thread. Early on this logic lived in the blueprint event graph, and moving it into code is one of the changes I would make again without hesitating: logic inside a `.uasset` is invisible to a text search, and I lost whole days to behaviour I could not find.
+The character's animation state is computed in C++ and the animation blueprint only consumes it. Velocity, acceleration, lean, turn state, whether a firearm is in hand, whether the body is squared up for combat — all of it is sampled once per update and exposed as thread-safe values, so the graph can branch on them from a worker thread instead of walking the character and its equipment itself.
 
 Turn-in-place runs on a root yaw offset: while the character stands still and the camera rotates around it, the mesh is counter-rotated so the feet stay planted, and the turn animation's own curve eats the offset back. Animation states request the mode they need each update rather than the offset guessing what is happening.
 
