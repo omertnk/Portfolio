@@ -1,0 +1,122 @@
+---
+title: "EndOfLife"
+summary: "A multiplayer zombie survival game built solo in Unreal Engine 5 — fragment-based items, per-unit condition, a tiered AI director that keeps hundreds of zombies alive off-screen, and PCG road generation."
+date: 2025-02-07
+tags: ["Unreal Engine 5", "C++", "Multiplayer", "Gameplay Ability System", "AI", "PCG", "Systems Design"]
+role: "Solo developer"
+duration: "2 years"
+team: "1 person"
+status: active
+featured: true
+links:
+  github: ""
+  video: ""
+---
+
+## Overview
+
+{/* GÖRSEL: dosyaları public/projects/endoflife/ içine koy, sonra bu yorumu kaldır
+<Gallery items={[
+  { src: "/projects/endoflife/screenshot-1.jpg", caption: "..." },
+  { src: "/projects/endoflife/screenshot-2.jpg", caption: "..." },
+]} />
+*/}
+EndOfLife is a multiplayer zombie survival game I built on my own in Unreal Engine 5. It takes the systemic depth of games like Project Zomboid — items that rot, wounds that need treating, skills that grow by use — and puts it in a 3D world with a persistent, sandbox-configurable simulation.
+
+It is the project where I put everything from ROSE and Ponchiqs together and then went further: instead of writing mechanics one by one, I design the systems those mechanics come out of. Most of what follows is architecture, because that is what the project is about.
+
+## What I built
+
+- **Fragment-based item system** — items are composed from fragments (perishable, firearm, container, cookable, liquid, protection…) instead of a class hierarchy, with per-unit runtime state
+- **AI director with three simulation tiers** — Active, Simple and Virtual, so hundreds of zombies keep existing when nobody is looking at them
+- **Virtual crowd renderer** — bodiless agents drawn as instanced meshes, one draw call per silhouette, so a horde on a distant hill is visible without spawning actors
+- **Ability-driven gameplay** — fire, reload, melee, harvest, interact, sleep, transfer and more as Gameplay Abilities, replicated across host and clients
+- **Needs & moodles system** — hunger, thirst, temperature, sickness, wounds, fatigue; each axis recomputed independently rather than in one mass refresh
+- **Crafting with ingredient pools** — recipes accept sets ("any screwdriver"), pick from mixed-condition stacks, and support evolved recipes
+- **Inventory & container system** — weight-based inventories, nested containers, drag-and-drop transfer, and nearby containers surfaced automatically so the player never hunts for what is in reach
+- **Gameplay Effects as the simulation currency** — needs, illness, wounds, movement modifiers and buffs are all effects on one attribute set
+- **Character animation system** — state computed in C++, turn-in-place, per-weapon animation layers and weapon-declared support-hand placement
+- **Attribute-driven movement on the Mover plugin** — speed and handling come from attributes, so wounds and load change movement without special cases
+- **Save system** — world items, containers, character state and world state persist across sessions
+- **PCG road network** — splines turned into a junction-aware road network generated procedurally
+- **Sandbox settings** — loot scarcity, zombie cognition and other dials the player configures before a run
+
+## Systems
+
+### Items as fragments, not classes
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/items.mp4" caption="Item tooltip showing per-unit condition." /> */}
+An item's definition is a data asset that carries a list of fragments; each fragment declares both what the item *is* and what mutable state it needs. A can of food is `Perishable + Consumable + Stackable`; a rifle is `Firearm + Equippable + Conditions`. Adding a new item behaviour means adding a fragment, not editing a base class.
+
+The part I care about most is **per-unit state**: a stack of five bandages where one is dirty is five units with their own state, not one stack with an average. Stateless items (screws, ammo) carry no per-unit state at all, so the memory cost only appears where it is needed.
+
+### AI that survives being ignored
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/ai-tiers.mp4" caption="Debug view: Active, Simple and Virtual agents." /> */}
+Zombies run in three tiers. **Active** agents simulate fully. **Simple** agents do exactly the same things at lower rates — a Simple zombie still hears, sees, chases and bites, it just thinks ten times a second instead of sixty. The distinction matters: if far-away zombies stopped reacting, players would learn to exploit it.
+
+The third tier, **Virtual**, has no actor at all. The agent becomes a record holding its position, its goal and an opaque payload with whatever it must not forget. The director never learns what a zombie is — it moves positions around and hands the payload back when a body is needed again.
+
+Behaviour itself runs on State Tree, and every task and condition is written in C++ — the tree asset holds only the wiring. That split is deliberate: a State Tree is a binary asset and a text search cannot see inside it. Keeping the vocabulary in code means "what can a zombie do" stays greppable even though "when does it do it" does not.
+
+### Drawing a crowd that does not exist
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/crowd.mp4" caption="A virtual horde rendered as instanced meshes." /> */}
+Virtual agents still need to be visible, otherwise the whole scale effort is pointless: seeing a mass on the far hill and choosing another road is the moment it exists for. They are drawn as one instanced mesh component per distinct silhouette, so a police horde and a civilian horde still read differently at range while each costs a single draw call. Transforms are rewritten wholesale every frame — writing 500 of them is cheaper than working out which twelve changed.
+
+### The inventory
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/inventory.mp4" caption="Nearby containers surfaced next to carried items." /> */}
+The inventory is the biggest system in the project and almost everything else touches it. Items live in an `FFastArraySerializer`-backed list on a component; every mutation is server-authoritative and clients rebuild their view from replication callbacks rather than from local guesses. Containers nest — a backpack inside a car boot inside a room — and weight propagates up the hierarchy, so what you can carry is decided by what you are wearing rather than by a slot count.
+
+The part I put the most thought into is the friction the player never notices. Standing near a shelf, its contents appear in the inventory next to what you are carrying: the UI runs a periodic sphere check and merges nearby containers into the same view, so looting is one screen instead of a sequence of open-and-close dialogs. Crafting uses the same reach — the tins in the cupboard behind you count as materials without a trip through the inventory first, and the same pool that is counted is the one that gets spent. That last part matters more than it sounds: when the menu counts materials one way and the craft spends them another, the menu offers a craft the server then refuses.
+
+### Gameplay Effects as the simulation
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/moodles.mp4" caption="Moodles reacting to hunger, wounds and sickness." /> */}
+Nearly everything that changes about a character over time is a Gameplay Effect on one attribute set — health and stamina, but also hunger, thirst, fatigue, sickness, pain, panic, stress, drunkenness, body weight, and the multipliers that movement and combat read. Wounds, illness, food, medicine and moodles all speak the same language, which means a new source of sickness is a new effect rather than a new branch in a character class.
+
+Needs drain through periodic effects whose magnitude is computed per tick rather than baked into the asset. Rates are authored per game hour because that is how a need is understood; the calculation converts them at the moment they apply, so changing the day length mid-game simply makes the next tick a different size instead of quietly invalidating every tuning value.
+
+### Character animation
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/animation.mp4" caption="Turn-in-place and per-weapon layers." /> */}
+The character's animation state is computed in C++ and the animation blueprint only consumes it. Velocity, acceleration, lean, turn state, whether a firearm is in hand, whether the body is squared up for combat — all of it is sampled once per update and exposed as thread-safe values the graph can branch on from a worker thread. Early on this logic lived in the blueprint event graph, and moving it into code is one of the changes I would make again without hesitating: logic inside a `.uasset` is invisible to a text search, and I lost whole days to behaviour I could not find.
+
+Turn-in-place runs on a root yaw offset: while the character stands still and the camera rotates around it, the mesh is counter-rotated so the feet stay planted, and the turn animation's own curve eats the offset back. Animation states request the mode they need each update rather than the offset guessing what is happening.
+
+Weapons bring their own animation layers, linked at runtime from the item's equippable fragment, so an axe, a rifle and empty hands share one locomotion skeleton with different upper bodies. A stance can suppress the start and stop animations: a start animation is a commitment that owns the first fraction of a second of movement, which reads as weight when you are walking somewhere and as unresponsiveness when something is trying to bite you.
+
+The support hand is the detail I am most pleased with. Normally the off hand's position on a weapon is baked into each animation clip, which works if you ship a full animation set per weapon. Here one melee set serves an axe, a bat and a knife, so the clips cannot know where the foregrip is — but the weapon can. Each weapon declares its own grip transform relative to the bone it hangs from, and the graph applies it before the IK. A weapon that declares nothing simply gets the animation, unchanged.
+
+### Movement
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/zombie-locomotion.mp4" caption="Animation-driven zombie locomotion." /> */}
+Movement runs on Unreal's Mover plugin. Speed, acceleration and deceleration are driven by attributes rather than hard-coded values, so a wound, an overloaded backpack or a moodle changes how the character moves without any system knowing about the others.
+
+Zombies move differently on purpose: their locomotion is animation-driven, meaning the walk cycle decides how far the body travels and the capsule follows it. Feet cannot slide, because there is no second opinion about how far a step covers — which matters when a crowd of them is shambling toward you in view at once.
+
+### Refactoring toward modules
+
+A good part of the work has been undoing my own early decisions. Components that started focused collected responsibilities until they were orchestrators doing five unrelated jobs, and every one of those was easy to add and expensive to live with.
+
+So refactoring is a planned phase rather than something I squeeze in. I audit what each class actually does, write the split down before touching code, and move one responsibility at a time into focused modules while the original class stays as a thin router — public API unchanged, so nothing calling it breaks. Each step is behaviour-preserving by rule: compile, test with a host and two clients, commit on its own. It is slower than rewriting, and it is the only version that does not trade a messy codebase for a broken one.
+
+## Challenges & learnings
+
+The hardest part of a solo project this size is that nothing stops you from making a mess. Every convenience I took early — a component that grew one more responsibility, a system that reached into another because it was quicker — came back as a bug I had to pay for later.
+
+What changed my approach was writing down *why* before *what*. The codebase is documented with the reasoning behind each decision, including the alternatives I rejected. When I come back to a system three months later, I do not have to re-derive the argument, and I catch myself before repeating a mistake the comment already warns about.
+
+## Tech stack
+
+| Area | Tools |
+| --- | --- |
+| Engine | Unreal Engine 5 |
+| Language | C++, Blueprints |
+| Gameplay | Gameplay Ability System, Gameplay Tags, Enhanced Input |
+| Movement | Mover plugin, Animation Warping, Motion Matching |
+| AI | State Tree, custom director & population subsystems |
+| World | PCG, procedural road network |
+| Networking | UE replication, server-authoritative |
+| Version control | Plastic SCM |
