@@ -16,25 +16,43 @@ export default function AboutPage() {
 
       <div className="prose mt-8 max-w-2xl">
         <p>
-          I&apos;m {site.name}, a {site.title.toLowerCase()} based in {site.location}. I build games with
-          Unreal Engine and web products with modern JavaScript tooling.
+          I&apos;m Ömer, a computer engineering graduate working as a gameplay programmer in Unreal
+          Engine.
         </p>
         <p>
-          I enjoy the full arc of a project: prototyping an idea, iterating on feel and feedback, and
-          shipping something people can actually use or play.
+          I started making games in my first year at university, with a nine-person team and no idea
+          what I was doing. None of us had used Unreal before. That project became ROSE, and partway
+          through it picked up a $50,000 investment from Digiage, which changed how we worked.
+          Deadlines started to mean something. I learned what it takes to work on a project people
+          have put money into, how a studio is actually run, and what it means to be part of a team
+          rather than a group of students sharing a repository.
+        </p>
+        <p>
+          ROSE got me hired onto Ponchiqs, a multiplayer shooter on the Epic Games Store. I worked
+          next to a senior developer there and learned more in those months than in the two years
+          before. That is where the Gameplay Ability System and Unreal&apos;s multiplayer framework
+          stopped being things I had read about and became things I could build with. Ponchiqs also
+          showed me how games are made professionally, with everything that comes with it.
+        </p>
+        <p>
+          After Ponchiqs I went back to finish my degree and started EndOfLife, my own project. It is
+          where I put everything from the first two projects together and pushed further into
+          Unreal&apos;s newer tech. It taught me how to design a system from the ground up instead of
+          bolting one onto whatever already exists, and I&apos;m still working on it.
         </p>
 
-        <h2>Skills</h2>
+        <h2>What I work with</h2>
         <ul>
-          <li>Unreal Engine 5 — C++ &amp; Blueprints, gameplay systems, UI</li>
-          <li>Web — TypeScript, React, Next.js, Tailwind CSS</li>
-          <li>Tools — Git, Perforce, Figma</li>
+          <li>Unreal Engine 5 — C++ and Blueprints, gameplay systems, Gameplay Ability System</li>
+          <li>Multiplayer — replication, client prediction, server-authoritative design</li>
+          <li>Animation — layered animation systems, state machines</li>
+          <li>AI — Behavior Trees, EQS</li>
+          <li>Tools — Git, Plastic SCM, Perforce, Jira</li>
         </ul>
 
         <h2>Contact</h2>
         <p>
-          The fastest way to reach me is email:{" "}
-          <a href={`mailto:${site.email}`}>{site.email}</a>
+          The fastest way to reach me is email: <a href={`mailto:${site.email}`}>{site.email}</a>
         </p>
       </div>
 
