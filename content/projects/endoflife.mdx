@@ -37,11 +37,19 @@ It is the project where I put everything from ROSE and Ponchiqs together and the
 - **Gameplay Effects as the simulation currency** — needs, illness, wounds, movement modifiers and buffs are all effects on one attribute set
 - **Character animation system** — state computed in C++, turn-in-place, per-weapon animation layers and weapon-declared support-hand placement
 - **Attribute-driven movement on the Mover plugin** — speed and handling come from attributes, so wounds and load change movement without special cases
+- **Clothing system** — layered garments merged into a single mesh, per-zone protection and wear, worn containers feeding carry capacity
 - **Save system** — world items, containers, character state and world state persist across sessions
 - **PCG road network** — splines turned into a junction-aware road network generated procedurally
 - **Sandbox settings** — loot scarcity, zombie cognition and other dials the player configures before a run
 
 ## Systems
+
+### The inventory
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/inventory.mp4" caption="Nearby containers surfaced next to carried items." /> */}
+The inventory is the biggest system in the project and almost everything else touches it. Items live in an `FFastArraySerializer`-backed list on a component; every mutation is server-authoritative and clients rebuild their view from replication callbacks rather than from local guesses. Containers nest — a backpack inside a car boot inside a room — and weight propagates up the hierarchy, so what you can carry is decided by what you are wearing rather than by a slot count.
+
+The part I put the most thought into is the friction the player never notices. Standing near a shelf, its contents appear in the inventory next to what you are carrying: the UI runs a periodic sphere check and merges nearby containers into the same view, so looting is one screen instead of a sequence of open-and-close dialogs. Crafting uses the same reach — the tins in the cupboard behind you count as materials without a trip through the inventory first, and the same pool that is counted is the one that gets spent. That last part matters more than it sounds: when the menu counts materials one way and the craft spends them another, the menu offers a craft the server then refuses.
 
 ### Items as fragments, not classes
 
@@ -49,6 +57,21 @@ It is the project where I put everything from ROSE and Ponchiqs together and the
 An item's definition is a data asset that carries a list of fragments; each fragment declares both what the item *is* and what mutable state it needs. A can of food is `Perishable + Consumable + Stackable`; a rifle is `Firearm + Equippable + Conditions`. Adding a new item behaviour means adding a fragment, not editing a base class.
 
 The part I care about most is **per-unit state**: a stack of five bandages where one is dirty is five units with their own state, not one stack with an average. Stateless items (screws, ammo) carry no per-unit state at all, so the memory cost only appears where it is needed.
+
+### Clothing and the assembled body
+
+A character is not one mesh. The bare body is split into parts — head, arms, legs — and every garment declares the same thing: which regions of the body it occupies, and which regions it covers up. A shirt is front, back and sleeves; a jacket over it covers the back and the arms, so what is underneath stops being drawn. The body is simply the innermost layer, and one rule resolves the whole stack.
+
+Assembling a body from that many pieces is expensive in the wrong place: it is not the draw calls, it is the per-frame work every skeletal mesh component does on the game thread. So the resolved stack is merged down into a single skeletal mesh, and the result is cached by **what a body is wearing** rather than by the body itself. Crowds repeat outfits — a street of zombies produces a handful of distinct signatures — so a hundred bodies cost a handful of merges.
+
+Clothing is not only cosmetic. A garment's protection is tracked per body zone, and damage tears specific zones open rather than draining one durability number: a coat with a torn sleeve protects the torso and not the arm. Wear is derived from those holes, so the number on the tooltip and the state the simulation reads can never disagree. Worn containers also feed the inventory — what you can carry is decided by the bags and pockets you have on.
+
+### Gameplay Effects as the simulation
+
+{/* GÖRSEL: <Figure src="/projects/endoflife/moodles.mp4" caption="Moodles reacting to hunger, wounds and sickness." /> */}
+Nearly everything that changes about a character over time is a Gameplay Effect on one attribute set — health and stamina, but also hunger, thirst, fatigue, sickness, pain, panic, stress, drunkenness, body weight, and the multipliers that movement and combat read. Wounds, illness, food, medicine and moodles all speak the same language, which means a new source of sickness is a new effect rather than a new branch in a character class.
+
+Needs drain through periodic effects whose magnitude is computed per tick rather than baked into the asset. Rates are authored per game hour because that is how a need is understood; the calculation converts them at the moment they apply, so changing the day length mid-game simply makes the next tick a different size instead of quietly invalidating every tuning value.
 
 ### AI that survives being ignored
 
@@ -63,20 +86,6 @@ Behaviour itself runs on State Tree. Every task and condition is written in C++ 
 
 {/* GÖRSEL: <Figure src="/projects/endoflife/crowd.mp4" caption="A virtual horde rendered as instanced meshes." /> */}
 Virtual agents still need to be visible, otherwise the whole scale effort is pointless: seeing a mass on the far hill and choosing another road is the moment it exists for. They are drawn as one instanced mesh component per distinct silhouette, so a police horde and a civilian horde still read differently at range while each costs a single draw call. Transforms are rewritten wholesale every frame — writing 500 of them is cheaper than working out which twelve changed.
-
-### The inventory
-
-{/* GÖRSEL: <Figure src="/projects/endoflife/inventory.mp4" caption="Nearby containers surfaced next to carried items." /> */}
-The inventory is the biggest system in the project and almost everything else touches it. Items live in an `FFastArraySerializer`-backed list on a component; every mutation is server-authoritative and clients rebuild their view from replication callbacks rather than from local guesses. Containers nest — a backpack inside a car boot inside a room — and weight propagates up the hierarchy, so what you can carry is decided by what you are wearing rather than by a slot count.
-
-The part I put the most thought into is the friction the player never notices. Standing near a shelf, its contents appear in the inventory next to what you are carrying: the UI runs a periodic sphere check and merges nearby containers into the same view, so looting is one screen instead of a sequence of open-and-close dialogs. Crafting uses the same reach — the tins in the cupboard behind you count as materials without a trip through the inventory first, and the same pool that is counted is the one that gets spent. That last part matters more than it sounds: when the menu counts materials one way and the craft spends them another, the menu offers a craft the server then refuses.
-
-### Gameplay Effects as the simulation
-
-{/* GÖRSEL: <Figure src="/projects/endoflife/moodles.mp4" caption="Moodles reacting to hunger, wounds and sickness." /> */}
-Nearly everything that changes about a character over time is a Gameplay Effect on one attribute set — health and stamina, but also hunger, thirst, fatigue, sickness, pain, panic, stress, drunkenness, body weight, and the multipliers that movement and combat read. Wounds, illness, food, medicine and moodles all speak the same language, which means a new source of sickness is a new effect rather than a new branch in a character class.
-
-Needs drain through periodic effects whose magnitude is computed per tick rather than baked into the asset. Rates are authored per game hour because that is how a need is understood; the calculation converts them at the moment they apply, so changing the day length mid-game simply makes the next tick a different size instead of quietly invalidating every tuning value.
 
 ### Character animation
 
@@ -96,17 +105,17 @@ Movement runs on Unreal's Mover plugin. Speed, acceleration and deceleration are
 
 Zombies move differently on purpose: their locomotion is animation-driven, meaning the walk cycle decides how far the body travels and the capsule follows it. Feet cannot slide, because there is no second opinion about how far a step covers — which matters when a crowd of them is shambling toward you in view at once.
 
-### Refactoring toward modules
-
-A good part of the work has been undoing my own early decisions. Components that started focused collected responsibilities until they were orchestrators doing five unrelated jobs, and every one of those was easy to add and expensive to live with.
-
-So refactoring is a planned phase rather than something I squeeze in. I audit what each class actually does, write the split down before touching code, and move one responsibility at a time into focused modules while the original class stays as a thin router — public API unchanged, so nothing calling it breaks. Each step is behaviour-preserving by rule: compile, test with a host and two clients, commit on its own. It is slower than rewriting, and it is the only version that does not trade a messy codebase for a broken one.
-
 ## Challenges & learnings
 
-The hardest part of a solo project this size is that nothing stops you from making a mess. Every convenience I took early — a component that grew one more responsibility, a system that reached into another because it was quicker — came back as a bug I had to pay for later.
+The hardest part of a solo project this size is that nothing stops you from making a mess. Components that started focused collected responsibilities until they were orchestrators doing five unrelated jobs — every one of those was easy to add and expensive to live with.
 
 What changed my approach was writing down *why* before *what*. The codebase is documented with the reasoning behind each decision, including the alternatives I rejected. When I come back to a system three months later, I do not have to re-derive the argument, and I catch myself before repeating a mistake the comment already warns about.
+
+### Refactoring as a phase, not an afterthought
+
+Refactoring is planned work here rather than something I squeeze in between features. I audit what each class actually does, write the split down before touching code, and move one responsibility at a time into focused modules while the original class stays as a thin router — public API unchanged, so nothing calling it breaks. Each step is behaviour-preserving by rule: compile, test with a host and two clients, commit on its own.
+
+It is slower than rewriting, and it is the only version that does not trade a messy codebase for a broken one.
 
 ## Tech stack
 
