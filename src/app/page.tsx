@@ -5,6 +5,18 @@ import { getFeaturedProjects } from "@/lib/projects";
 import { Container } from "@/components/Container";
 import { ProjectCard } from "@/components/ProjectCard";
 import { SocialLinks } from "@/components/SocialLinks";
+import { Tag } from "@/components/Tag";
+
+// Ana sayfadaki kısa tanıtım. Uzun hali /about sayfasında.
+const skills = [
+  "Unreal Engine 5",
+  "C++",
+  "Blueprints",
+  "Gameplay Ability System",
+  "Multiplayer",
+  "Animation",
+  "AI",
+];
 
 export default function HomePage() {
   const featured = getFeaturedProjects(3);
@@ -42,6 +54,36 @@ export default function HomePage() {
             <ProjectCard key={p.slug} project={p} />
           ))}
         </div>
+      </section>
+
+      {/* Short about */}
+      <section className="mt-24">
+        <h2 className="text-2xl font-semibold tracking-tight">About me</h2>
+        <div className="mt-5 max-w-2xl space-y-4 text-muted">
+          <p>
+            I&apos;m a computer engineering graduate who started making games in my first year at
+            university, with a nine-person team and no Unreal experience between us. That project
+            became ROSE, which shipped on Steam after a $50,000 investment from Digiage.
+          </p>
+          <p>
+            ROSE got me hired onto Ponchiqs, a multiplayer shooter on the Epic Games Store, where I
+            built the movement and traversal abilities and learned how Unreal&apos;s replication and
+            Gameplay Ability System really work. I&apos;m now building EndOfLife, my own project.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-1.5">
+          {skills.map((s) => (
+            <Tag key={s}>{s}</Tag>
+          ))}
+        </div>
+
+        <Link
+          href="/about"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent transition hover:opacity-80"
+        >
+          More about me <ArrowRight size={14} />
+        </Link>
       </section>
     </Container>
   );
